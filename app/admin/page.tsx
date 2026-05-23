@@ -1,7 +1,25 @@
 "use client";
 import React, { useState } from "react";
+interface Lead {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  targetBudget: number;
+  targetRegion: string;
+  assignedBrokerId: string | null;
+  status: "new" | "assigned" | "under_escrow" | "closed" | "lost";
+  createdAt: string;
+}
+interface Broker {
+  id: string;
+  fullName: string;
+  brokerageName: string;
+  operatingRegion: string;
+  licenseNumber: string;
+}
 export default function AdminDashboard() {
-  const [brokers] = useState([
+  const [brokers] = useState<Broker[]>([
     {
       id: "b1",
       fullName: "Sarah Park",
@@ -18,13 +36,13 @@ export default function AdminDashboard() {
     },
     {
       id: "b3",
-      fullName: "정성필 대표",
-      brokerageName: "한남 메이저 빌딩중개",
+      fullName: "김민준",
+      brokerageName: "리맥스 코리아 서울-강남",
       operatingRegion: "Seoul-Gangnam",
       licenseNumber: "REG# 11650-2024",
     }
   ]);
-  const [leads, setLeads] = useState([
+  const [leads, setLeads] = useState<Lead[]>([
     {
       id: "l1",
       fullName: "김우진",
@@ -38,7 +56,7 @@ export default function AdminDashboard() {
     },
     {
       id: "l2",
-      fullName: "이정은 (유학 자녀 대리)",
+      fullName: "이정현 (Jeonghyun Lee)",
       email: "jeoungeun@daum.net",
       phone: "010-5555-4444",
       targetBudget: 1200000,
@@ -49,7 +67,7 @@ export default function AdminDashboard() {
     },
     {
       id: "l3",
-      fullName: "James Park (귀환 자산가)",
+      fullName: "James Park (박영수)",
       email: "james.p@gmail.com",
       phone: "+1-213-911-0000",
       targetBudget: 4500000,
@@ -59,7 +77,7 @@ export default function AdminDashboard() {
       createdAt: "2026-05-22 14:05",
     }
   ]);
-  const handleAssignBroker = (leadId, brokerId) => {
+  const handleAssignBroker = (leadId: string, brokerId: string) => {
     setLeads(prev =>
       prev.map(l => {
         if (l.id === leadId) {
@@ -73,11 +91,11 @@ export default function AdminDashboard() {
       })
     );
   };
-  const handleUpdateStatus = (leadId, newStatus) => {
+  const handleUpdateStatus = (leadId: string, newStatus: string) => {
     setLeads(prev =>
-      prev.map(l => (l.id === leadId ? { ...l, status: newStatus } : l))
+      prev.map(l => (l.id === leadId ? { ...l, status: newStatus as any } : l))
     );
-  };
+  }; 
   const activePipelineBudget = leads
     .filter(l => l.status !== "lost")
     .reduce((sum, l) => sum + l.targetBudget, 0);
@@ -102,7 +120,7 @@ export default function AdminDashboard() {
           </div>
           <div>
             <span style={{ fontSize: "12px", color: "#F43F5E", fontWeight: "bold", border: "1px solid #FECDD3", padding: "4px 10px", borderRadius: "100px", backgroundColor: "#FFF1F2" }}>
-              실시간 거래 승인 원장 감시 중
+              관리자 페이지 운영 중
             </span>
           </div>
         </div>
@@ -110,44 +128,44 @@ export default function AdminDashboard() {
       <main style={{ maxWidth: "1200px", margin: "40px auto", padding: "0 20px", display: "flex", flexDirection: "column", gap: "30px" }}>
         <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
           <div style={{ backgroundColor: "white", border: "1px solid #E2E8F0", borderRadius: "10px", padding: "20px" }}>
-            <span style={{ fontSize: "12px", color: "#475569", fontWeight: "bold", display: "block", marginBottom: "5px" }}>전체 거래 파이프라인 자산 규모</span>
+            <span style={{ fontSize: "12px", color: "#475569", fontWeight: "bold", display: "block", marginBottom: "5px" }}>전체 활동 파이프라인 버젯</span>
             <span style={{ fontSize: "28px", fontWeight: "900", color: "#0F172A" }}>
-              ${activePipelineBudget.toLocaleString()}
+              {activePipelineBudget.toLocaleString()}
             </span>
-            <span style={{ fontSize: "11px", color: "#475569", display: "block", marginTop: "5px" }}>매수 희망 및 계약 진행액 총합</span>
+            <span style={{ fontSize: "11px", color: "#475569", display: "block", marginTop: "5px" }}>현재 활성 상태의 리드들이 가진 총 버젯</span>
           </div>
           <div style={{ backgroundColor: "white", border: "1px solid #E2E8F0", borderRadius: "10px", padding: "20px" }}>
-            <span style={{ fontSize: "12px", color: "#475569", fontWeight: "bold", display: "block", marginBottom: "5px" }}>예상 유료 수수료 계약 잔정액 (30% 리퍼럴 피)</span>
+            <span style={{ fontSize: "12px", color: "#475569", fontWeight: "bold", display: "block", marginBottom: "5px" }}>추정 중개 수수료 수익 (3% 30%)</span>
             <span style={{ fontSize: "28px", fontWeight: "900", color: "#2563EB" }}>
-              ${totalEstimatedReferralRevenue.toLocaleString()}
+              {totalEstimatedReferralRevenue.toLocaleString()}
             </span>
             <span style={{ fontSize: "11px", color: "#2563EB", fontWeight: "bold", display: "block", marginTop: "5px" }}>
-              국내 정산액 환산: ₩{(totalEstimatedReferralRevenue * 1380).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              환산액: {Math.round(totalEstimatedReferralRevenue * 1380).toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </span>
           </div>
           <div style={{ backgroundColor: "white", border: "1px solid #E2E8F0", borderRadius: "10px", padding: "20px" }}>
-            <span style={{ fontSize: "12px", color: "#475569", fontWeight: "bold", display: "block", marginBottom: "5px" }}>거래 종결 완료 누적 수당 (Closed)</span>
+            <span style={{ fontSize: "12px", color: "#475569", fontWeight: "bold", display: "block", marginBottom: "5px" }}>총 종료 (Closed) 수익</span>
             <span style={{ fontSize: "28px", fontWeight: "900", color: "#15803D" }}>
-              ${totalClosedRevenue.toLocaleString()}
+              {totalClosedRevenue.toLocaleString()}
             </span>
-            <span style={{ fontSize: "11px", color: "#15803D", fontWeight: "bold", display: "block", marginTop: "5px" }}>실 출금 가능 전배 정산액</span>
+            <span style={{ fontSize: "11px", color: "#15803D", fontWeight: "bold", display: "block", marginTop: "5px" }}>실제 발생한 중개 수수료</span>
           </div>
         </section>
         <section style={{ backgroundColor: "white", border: "1px solid #E2E8F0", borderRadius: "12px", padding: "25px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "800", marginBottom: "5px" }}>인입된 자산가 리드 일체 및 실시간 브로커 추천 관리 시스템</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "800", marginBottom: "5px" }}>신규 생성된 리드 / 배정되지 않은 리드 목록</h2>
           <p style={{ fontSize: "12px", color: "#475569", marginBottom: "20px" }}>
-            계산기를 두드린 고액 자녀 부모 및 이민 자산가의 개인 정보입니다. 안전 법률 검토에 입각해 가장 적절한 라이선스 브로커를 원터치 매칭합니다.
+            아래 표에서 브로커를 배정하거나 리드의 상태를 변경할 수 있습니다. 각 리드는 고유한 버젯과 타겟 지역을 가지며, 이를 바탕으로 브로커를 배정합니다.
           </p>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px", textAlign: "left" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid #E2E8F0", color: "#475569", fontWeight: "700" }}>
-                  <th style={{ padding: "12px 10px" }}>인입 일시 / 고객 정보</th>
-                  <th style={{ padding: "12px 10px" }}>매수 지역</th>
-                  <th style={{ padding: "12px 10px" }}>자산 자본금</th>
-                  <th style={{ padding: "12px 10px" }}>매칭 파트너 공인중개업자</th>
-                  <th style={{ padding: "12px 10px" }}>진행 거래 에스크로 상태</th>
-                  <th style={{ padding: "12px 10px" }}>리퍼럴 정산 금액</th>
+                  <th style={{ padding: "12px 10px" }}>이름 / 연락처</th>
+                  <th style={{ padding: "12px 10px" }}>타겟 지역</th>
+                  <th style={{ padding: "12px 10px" }}>타겟 버젯</th>
+                  <th style={{ padding: "12px 10px" }}>배정 브로커 선택</th>
+                  <th style={{ padding: "12px 10px" }}>리드 진행 상태</th>
+                  <th style={{ padding: "12px 10px" }}>추정 수익</th>
                 </tr>
               </thead>
               <tbody>
@@ -169,19 +187,18 @@ export default function AdminDashboard() {
                           onChange={(e) => handleAssignBroker(lead.id, e.target.value)}
                           style={{ padding: "6px", borderRadius: "5px", border: "1px solid #CBD5E1", fontSize: "12px", backgroundColor: "white", width: "100%" }}
                         >
-                          <option value="">미지정 (미승인 리드)</option>
+                          <option value="">브로커 선택 (미배정)</option>
                           {brokers
                             .filter(b => b.operatingRegion === lead.targetRegion)
                             .map(b => (
                               <option key={b.id} value={b.id}>
                                 {b.fullName} ({b.brokerageName})
                               </option>
-                            ))
-                          }
+                            ))}
                         </select>
                         {assignedBroker && (
                           <span style={{ fontSize: "10px", color: "#15803D", fontWeight: "bold", display: "block", marginTop: "4px" }}>
-                            라이선스 검증: {assignedBroker.licenseNumber}
+                            배정 브로커 라이센스: {assignedBroker.licenseNumber}
                           </span>
                         )}
                       </td>
@@ -191,17 +208,17 @@ export default function AdminDashboard() {
                           onChange={(e) => handleUpdateStatus(lead.id, e.target.value)}
                           style={{ padding: "6px", borderRadius: "5px", border: "1px solid #CBD5E1", fontSize: "12px", backgroundColor: "white" }}
                         >
-                          <option value="new">신접수</option>
-                          <option value="assigned">연계 개시</option>
-                          <option value="under_escrow">에스크로 매수 서명</option>
-                          <option value="closed">정산 완결</option>
-                          <option value="lost">불발</option>
+                          <option value="new">신규 생성</option>
+                          <option value="assigned">배정 완료</option>
+                          <option value="under_escrow">언더 에스크로 진행 중</option>
+                          <option value="closed">종료 완료</option>
+                          <option value="lost">리드 유실</option>
                         </select>
                       </td>
                       <td style={{ padding: "15px 10px", fontWeight: "bold", color: lead.status === "closed" ? "#15803D" : "#0F172A" }}>
-                        ${referralFee.toLocaleString()}
+                        {referralFee.toLocaleString()}
                         <span style={{ fontSize: "10px", display: "block", color: "#475569" }}>
-                          (₩{(referralFee * 1380).toLocaleString(undefined, { maximumFractionDigits: 0 })})
+                          (${Math.round(referralFee * 1380).toLocaleString(undefined, { maximumFractionDigits: 0 })})
                         </span>
                       </td>
                     </tr>
@@ -212,7 +229,7 @@ export default function AdminDashboard() {
           </div>
         </section>
       </main>
-      <footer style={{ borderTop: "1px solid #E2E8F0", padding: "30px 20px", textAlign: "center", color: "#475569", fontSize: "12px", backgroundColor: "white", marginTop: "100px" }}>
+      <footer style={{ borderTop: "1px solid #E2E8F0", padding: "30px 20px", textAlign: "center", color: "#475569", fontSize: "12px", backgroundColor: "white", marginTop: "80px" }}>
         <p style={{ margin: "0 0 5px 0", fontWeight: "500" }}>Licensed under cross-border real estate referral ledger tools for administrators.</p>
         <p style={{ margin: 0, color: "#94A3B8" }}>© 2026 K-US Real Estate Corridor Network Admin Panel. All rights reserved.</p>
       </footer>
